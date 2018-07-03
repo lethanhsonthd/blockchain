@@ -1,5 +1,8 @@
 const SHA256 = require('crypto-js/sha256')
 const blockchain = require('blockchain.info')
+const datetime = require('node-datetime').create()
+const randomstring = require('randomstring')
+console.log(new Date(datetime.now()))
 class Block{
     constructor(index, timestamp, data, previoushash=''){
         this.index = index
@@ -8,20 +11,23 @@ class Block{
         this.previoushash = previoushash
         this.hash = ''
         this.nonce = 0
-    }
+    }   
     calculateHash(){
         return SHA256(this.index + this.previoushash + this.timestamp + JSON.stringify(this.data) + this.nonce).toString()
     }
     mineBlock(difficulty){
+        console.log('Mining ....')
         while (this.hash.substr(0, difficulty) !== Array(difficulty +1).join("0")){
             this.nonce++
             this.hash = this.calculateHash()
         }
+        console.log(this.hash)
     }
 }
 class BlockChain{
     constructor(){
         this.chain = [this.creategenesisBlock()]
+        this.difficulty = 4
     }
     creategenesisBlock(){
         return new Block(0,'2/7/2018','Genesis Block','null')
@@ -31,7 +37,7 @@ class BlockChain{
     }
     addBlock(newBlock){
         newBlock.previoushash = this.getLatesBlock().hash
-        newBlock.hash = newBlock.calculateHash()
+        newBlock.mineBlock(this.difficulty)
         this.chain.push(newBlock) 
     }
     isChainValid(){
@@ -49,7 +55,6 @@ class BlockChain{
     }
 }
 let mycoin = new BlockChain()
-mycoin.addBlock(new Block(1,'3/7/2018','data 1',{amount: 4}))
-mycoin.addBlock(new Block(2,'3/7/2018','data 2',{amount: 1}))
-console.log(Array(5).join('0'))
-console.log(mycoin.isChainValid())
+for (let i=1;i<10;i++){
+    mycoin.addBlock(new Block(i,new Date(datetime.now()),randomstring.generate()))
+}
